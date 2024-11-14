@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_book_tree" model="ir.ui.view">
+        <field name="name">book.list.view</field>
+        <field name="model">book</field>
+        <field name="arch" type="xml">
+            <tree string="Books">
+                <field name="name"/>
+                <field name="description"/>
+                <field name="pages"/>
+                <field name="genre_ids"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_book_form" model="ir.ui.view">
+        <field name="name">book.form.view</field>
+        <field name="model">book</field>
+        <field name="arch" type="xml">
+            <form string="Book">
+                <group>
+                    <group>
+                        <field name="name"/>
+                        <field name="description"/>
+                        <field name="pages"/>
+                        <field name="genre_ids" widget="many2many_tags"/>
+                    </group>
+                </group>
+            </form>
+        </field>
+    </record>
+
+
+
+
+
+
+    <record id="view_genre_tree" model="ir.ui.view">
+        <field name="name">genre.list.view</field>
+        <field name="model">book.genre</field>
+        <field name="arch" type="xml">
+            <tree string="Genres">
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_genre_form" model="ir.ui.view">
+        <field name="name">genre.form.view</field>
+        <field name="model">book.genre</field>
+        <field name="arch" type="xml">
+            <form string="Genre">
+                <group>
+                    <group>
+                        <field name="name"/>
+                    </group>
+                </group>
+            </form>
+        </field>
+    </record>
+
+
+
+    <record id="view_book_search" model="ir.ui.view">
+        <field name="name">book.search</field>
+        <field name="model">book</field>
+        <field name="arch" type="xml">
+            <search string="Search Books">
+                <field name="name" string="Title"/>
+                <field name="genre_ids" string="Genre" domain="[('id', 'in', genre_ids)]"/>
+                
+                <filter name="genre_filter" string="By Genre" context="{'group_by': 'genre_ids'}"/>
+            </search>
+        </field>
+    </record>
+
+
+
+    <record id="view_book_issue_tree" model="ir.ui.view">
+        <field name="name">book.issue.list.view</field>
+        <field name="model">book.issue</field>
+        <field name="arch" type="xml">
+            <tree string="Book Issues">
+                <field name="contact_id"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+                <field name="status"/>
+            </tree>
+        </field>
+    </record>
+
+
+    <record id="view_book_issue_form" model="ir.ui.view">
+        <field name="name">book.issue.form</field>
+        <field name="model">book.issue</field>
+        <field name="arch" type="xml">
+            <form string="Book Issue">
+                <group>
+                    <group>
+                        <field name="contact_id"/>
+                        <field name="start_date"/>
+                        <field name="end_date"/>
+                        <field name="status"/>
+                    </group>
+                    <group string="Books to Issue">
+                        <field name="book_ids" widget="many2many_tags"/>
+                    </group>
+                </group>
+            </form>
+        </field>
+    </record>
+
+
+
+    <record id="action_book" model="ir.actions.act_window">
+        <field name="name">Book</field>
+        <field name="res_model">book</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_book_tree"/>
+        <field name="search_view_id" ref="view_book_search"/>
+    </record>
+
+    <record id="action_genre" model="ir.actions.act_window">
+        <field name="name">Genre</field>
+        <field name="res_model">book.genre</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="action_book_issue" model="ir.actions.act_window">
+        <field name="name">Book Issues</field>
+        <field name="res_model">book.issue</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_book_issue_tree"/>
+    </record>
+
+
+    
+    <template id="book_issue_report_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <div class="page">
+                    <h2>Book Issue History for <t t-esc="doc.name"/></h2>
+
+                    <table class="table table-condensed">
+                        <thead>
+                            <tr>
+                                <th>Book Title</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="doc.get_book_issues()" t-as="issue">
+                                <tr>
+                                    <td><t t-esc="issue.book_title"/></td>
+                                    <td><t t-esc="issue.start_date"/></td>
+                                    <td><t t-esc="issue.end_date"/></td>
+                                    <td><t t-esc="issue.status"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+
+
+    <data>
+        <report
+            id="action_report_book_issue"
+            model="res.partner"
+            string="Book Issue Report"
+            report_type="qweb-pdf"
+            name="book.book_issue_report_template"
+            file="book.book_issue_report_template"
+            attachment_use="False"
+        />
+    </data>
+
+
+    <menuitem id="book_root_menu" name="Books" />
+    <menuitem id="knygos" parent="book_root_menu" />
+    <menuitem id="zanrai" parent="book_root_menu" />
+    <menuitem id="isdavimai" parent="book_root_menu" />
+    <menuitem id="book_menu" action="action_book" parent="knygos"/>
+    <menuitem id="genre_menu" action="action_genre" parent="zanrai"/>
+    <menuitem id="issue_menu" action="action_book_issue" parent="isdavimai"/>
+    <menuitem id="issue_report" action="action_report_book_issue" parent="isdavimai"/>
+</odoo>
